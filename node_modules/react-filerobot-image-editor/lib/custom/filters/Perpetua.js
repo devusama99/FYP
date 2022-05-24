@@ -1,0 +1,1 @@
+import _slicedToArray from"@babel/runtime/helpers/slicedToArray";import BaseFilters from"./BaseFilters";var ADJUST_RGB_CONST=[1.05,1.1,1];function Perpetua(a){for(var b=a.data,c=b.length,d=0;d<c;d+=4){var e=BaseFilters.adjustRGB([b[d],b[d+1],b[d+2]],ADJUST_RGB_CONST),f=_slicedToArray(e,3);b[d]=f[0],b[d+1]=f[1],b[d+2]=f[2]}}export default Perpetua;
