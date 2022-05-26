@@ -136,7 +136,7 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-function AdminUserManagement() {
+function AdminSubscriptionManagement() {
   const classes = useStyle();
   const [users, setUsers] = useState([]);
   const { REACT_APP_BACKEND: BACKEND } = process.env;
@@ -201,37 +201,33 @@ function AdminUserManagement() {
   function AddUser(data) {
     setSnackData({ ...snackData, open: false });
     setDisable(!disable);
-
+    const temp = {
+      SubscriptionFeatures: data.features.split("\n"),
+      SubscriptionPrice: data.price,
+      AllowedSubUsers: data.subusers,
+      SubscriptionName: data.name,
+    };
     var config = {
       method: "post",
-      url: `${BACKEND}/userRouter/signUp`,
+      url: `${BACKEND}/adminRouter/createSubscription`,
       headers: {
         "Content-Type": "application/json",
       },
-      data: data,
+      data: temp,
     };
-
+    console.log(temp);
     axios(config)
       .then(function (res) {
-        if (res.data === "User Successfully Created") {
-          setSnackData({
-            message: "User Registered Successfuly",
-            type: "success",
-            open: true,
-          });
-          reset();
-          setDisable(false);
-          setUsers([data, ...users]);
-          addClose();
-        } else {
-          setSnackData({
-            message: "User Already Registered",
-            type: "error",
-            open: true,
-          });
-          setValue("username", "");
-          setDisable(false);
-        }
+        setSnackData({
+          message: "Subscription Created Successfuly",
+          type: "success",
+          open: true,
+        });
+        reset();
+        setDisable(false);
+        setUsers([res.data, ...users]);
+        addClose();
+
         console.log(res);
       })
       .catch(function (error) {
@@ -245,29 +241,36 @@ function AdminUserManagement() {
   }
 
   function EditUser(data) {
+    console.log(actionId);
     setDisable(true);
     setSnackData({ ...snackData, open: false });
+    const temp = {
+      SubscriptionFeatures: data.features.split("\n"),
+      SubscriptionPrice: data.price,
+      AllowedSubUsers: data.subusers,
+      SubscriptionName: data.name,
+    };
     var config = {
       method: "put",
-      url: `${BACKEND}/adminRouter/updateProfile`,
+      url: `${BACKEND}/adminRouter/updateSubscription${actionId}`,
       headers: {
         Authorization: localStorage.getItem("token"),
         "Content-Type": "application/json",
       },
-      data: data,
+      data: temp,
     };
 
     axios(config)
       .then(function (response) {
         setSnackData({
-          message: "Information Updated Succesfully",
+          message: "Subscription Updated Succesfully",
           type: "success",
           open: true,
         });
 
         setUsers([
-          data,
-          ...users.filter((ele) => data.username !== ele.username),
+          { ...temp, _id: actionId },
+          ...users.filter((ele) => data.name !== ele.SubscriptionName),
         ]);
         setDisable(false);
         editClose();
@@ -275,7 +278,7 @@ function AdminUserManagement() {
       .catch(function (error) {
         console.log(error);
         setSnackData({
-          message: "Error Updating Information",
+          message: "Error Updating Subscription",
           type: "error",
           open: true,
         });
@@ -283,10 +286,11 @@ function AdminUserManagement() {
       });
   }
   function editReady(data) {
-    setValue("firstName", data.firstName);
-    setValue("lastName", data.lastName);
-    setValue("userEmail", data.userEmail);
-    setValue("username", data.username);
+    setValue("price", data.SubscriptionPrice);
+    setValue("name", data.SubscriptionName);
+    setValue("subusers", data.AllowedSubUsers);
+    setValue("features", data.SubscriptionFeatures.join("\n"));
+    setActionId(data._id);
     editOpen();
   }
   function DeleteUser() {
@@ -294,7 +298,7 @@ function AdminUserManagement() {
     setDisable(true);
     var config = {
       method: "delete",
-      url: `${BACKEND}/adminRouter/deleteUser${actionId}`,
+      url: `${BACKEND}/adminRouter/deleteSubscription${actionId}`,
       headers: {
         Authorization: localStorage.getItem("token"),
         "Content-Type": "application/json",
@@ -306,7 +310,7 @@ function AdminUserManagement() {
         console.log(response);
         setSnackData({
           type: "success",
-          message: "User Deleted Successfully",
+          message: "Subscription Deleted Successfully",
           open: true,
         });
         setDisable(false);
@@ -319,7 +323,7 @@ function AdminUserManagement() {
         setDisable(false);
         setSnackData({
           type: "error",
-          message: "Error Deleting User",
+          message: "Error Deleting Subscription",
           open: true,
         });
       });
@@ -329,7 +333,7 @@ function AdminUserManagement() {
     setSnackData({ ...snackData, open: false });
     var config = {
       method: "get",
-      url: `${BACKEND}/adminRouter/viewAllUsers`,
+      url: `${BACKEND}/adminRouter/viewAllSubscription`,
       headers: {
         Authorization: localStorage.getItem("token"),
         "Content-Type": "application/json",
@@ -370,7 +374,7 @@ function AdminUserManagement() {
         className={classes.heading}
         gutterBottom
       >
-        USER MANAGEMENT
+        SUBSCRIPTION MANAGEMENT
       </Typography>
       <Button
         variant={"contained"}
@@ -379,7 +383,7 @@ function AdminUserManagement() {
         disableElevation
         onClick={addOpen}
       >
-        Add User
+        Add Subscripition
       </Button>
       <div className={classes.tableContainer}>
         <MaterialTable
@@ -388,30 +392,23 @@ function AdminUserManagement() {
           title=" "
           columns={[
             {
-              title: "Name",
-              field: "name",
-              render: (rowData) => (
-                <p>
-                  {rowData.firstName} {rowData.lastName}
-                </p>
-              ),
+              title: "Subscription Name",
+              field: "SubscriptionName",
             },
             {
-              title: "Username",
-              field: "username",
-              cellStyle: { maxWidth: 80 },
+              title: "Features",
+              field: "SubscriptionFeatures",
+              render: (rowData) =>
+                rowData.SubscriptionFeatures.map((ele) => (
+                  <>
+                    <p>{ele}</p>
+                  </>
+                )),
             },
             {
-              title: "Email",
-              field: "userEmail",
-              cellStyle: { maxWidth: 250 },
-            },
-            {
-              title: "Creation Date",
-              field: "updatedAt",
-              render: (rowData) => (
-                <p>{moment(rowData.updatedAt).format("DD/MM/YYYY")}</p>
-              ),
+              title: "Price",
+              field: "SubscriptionPrice",
+              render: (rowData) => <p>$ {rowData.SubscriptionPrice}</p>,
             },
           ]}
           data={users}
@@ -486,18 +483,18 @@ function AdminUserManagement() {
                   InputLabelProps={{ shrink: true }}
                   size={"medium"}
                   color={"primary"}
-                  label={"First Name"}
-                  name="firstName"
+                  label={"Name"}
+                  name="name"
                   className={classes.formItem}
-                  {...register1("firstName", {
-                    required: "First name required",
+                  {...register1("name", {
+                    required: " Name required",
                     pattern: {
                       value: /^[a-zA-Z ]*$/,
-                      message: "Invalid first name",
+                      message: "Invalid Name",
                     },
                   })}
-                  error={Boolean(errors1.firstName)}
-                  helperText={errors1.firstName?.message}
+                  error={Boolean(errors1.name)}
+                  helperText={errors1.name?.message}
                   fullWidth
                 ></TextField>
                 <TextField
@@ -505,18 +502,18 @@ function AdminUserManagement() {
                   InputLabelProps={{ shrink: true }}
                   size={"medium"}
                   color={"primary"}
-                  label={"Last Name"}
+                  label={"Price"}
+                  name="price"
                   className={classes.formItem}
-                  name="lastName"
-                  {...register1("lastName", {
-                    required: "Last name required",
+                  {...register1("price", {
+                    required: " Price required",
                     pattern: {
-                      value: /^[a-zA-Z ]*$/,
-                      message: "Invalid last name",
+                      value: /^[1-9][0-9]*$/,
+                      message: "Invalid Price",
                     },
                   })}
-                  error={Boolean(errors1.lastName)}
-                  helperText={errors1.lastName?.message}
+                  error={Boolean(errors1.price)}
+                  helperText={errors1.price?.message}
                   fullWidth
                 ></TextField>
                 <TextField
@@ -524,44 +521,41 @@ function AdminUserManagement() {
                   InputLabelProps={{ shrink: true }}
                   size={"medium"}
                   color={"primary"}
-                  label={"Email"}
-                  name="userEmail"
+                  label={"Allowed Subusers"}
+                  name="subusers"
                   className={classes.formItem}
-                  {...register1("userEmail", {
-                    required: "Email required",
+                  {...register1("subusers", {
+                    required: " Subusers required",
                     pattern: {
-                      value:
-                        /^[a-zA-Z]+[a-zA-Z0-9_.-]{1,}\@([A-Za-z0-9_\-\.]){1,}\.([A-Za-z]){2,4}$/,
-                      message: "Invalid email",
+                      value: /^[1-5]*$/,
+                      message: "Invalid Subusers",
                     },
                   })}
-                  error={Boolean(errors1.userEmail)}
-                  helperText={errors1.userEmail?.message}
+                  error={Boolean(errors1.subusers)}
+                  helperText={errors1.subusers?.message}
                   fullWidth
                 ></TextField>
+
                 <TextField
                   variant={"outlined"}
                   InputLabelProps={{ shrink: true }}
-                  disabled
                   size={"medium"}
                   color={"primary"}
-                  label={"Username"}
-                  name="username"
+                  label={"Features"}
+                  multiline
+                  rows={8}
                   className={classes.formItem}
-                  {...register1("username", {
-                    required: "Username Required",
+                  name="features"
+                  {...register1("features", {
+                    required: "Features Required",
                     pattern: {
-                      value: /^[a-zA-Z]+[a-zA-Z0-9_.-]{2,}$/,
-                      minLength: {
-                        value: 6,
-                        message: "Username can not be less than 3 characters",
-                      },
-                      message: "Invalid Username",
+                      value: /^[a-zA-Z0-9 _.-]{2,}$/m,
+                      message: "Invalid Features",
                     },
                   })}
-                  error={Boolean(errors1.username)}
-                  helperText={errors1.username?.message}
                   fullWidth
+                  error={Boolean(errors1.features)}
+                  helperText={errors1.features?.message}
                 ></TextField>
 
                 <div
@@ -580,7 +574,7 @@ function AdminUserManagement() {
                     disabled={disable}
                     disableElevation
                   >
-                    Edit User
+                    Edit Subscription
                     {disable ? <Progress color="primary" size={20} /> : ""}
                   </Button>
                   <Button
@@ -620,22 +614,13 @@ function AdminUserManagement() {
                   component={"h3"}
                   className={classes.dangerHeading}
                 >
-                  Delete Account Permanently
+                  Delete Subscription Permanently
                 </Typography>
               </div>
             </div>
             <div className={classes.contentBox}>
               <Typography variant="body2" className={classes.contentPart1}>
-                We are sorry to hear you’d like to delete your account.
-                Permenantly Delete data and all services from IntelliGenie.
-              </Typography>
-              <Typography variant={"h6"} className={classes.contentProminent}>
-                Keeping Your Data Safe
-              </Typography>
-              <Typography variant={"body2"} className={classes.contentPart2}>
-                Nothing is more important to us than the safety and security of
-                our community. People put their trust in us. So we will never
-                make any compromise when it comes to safeguarding your data
+                Permenantly Delete Subscription from IntelliGenie.
               </Typography>
 
               <div className={classes.btnGroup}>
@@ -646,7 +631,7 @@ function AdminUserManagement() {
                   disabled={disable}
                   disableElevation
                 >
-                  Delete Account{" "}
+                  Delete Subscription
                   {disable ? <Progress color="primary" size={20} /> : ""}
                 </Button>
                 <Button
@@ -684,7 +669,7 @@ function AdminUserManagement() {
               color={"primary"}
               id="transition-modal-title"
             >
-              Add Sub User
+              Add Subscription
             </Typography>
             <div className={classes.modalForm}>
               <div className={classes.modalForm}>
@@ -699,18 +684,18 @@ function AdminUserManagement() {
                     InputLabelProps={{ shrink: true }}
                     size={"medium"}
                     color={"primary"}
-                    label={"First Name"}
-                    name="firstName"
+                    label={"Name"}
+                    name="name"
                     className={classes.formItem}
-                    {...register("firstName", {
-                      required: "First name required",
+                    {...register("name", {
+                      required: " Name required",
                       pattern: {
                         value: /^[a-zA-Z ]*$/,
-                        message: "Invalid first name",
+                        message: "Invalid Name",
                       },
                     })}
-                    error={Boolean(errors.firstName)}
-                    helperText={errors.firstName?.message}
+                    error={Boolean(errors.name)}
+                    helperText={errors.name?.message}
                     fullWidth
                   ></TextField>
                   <TextField
@@ -718,18 +703,18 @@ function AdminUserManagement() {
                     InputLabelProps={{ shrink: true }}
                     size={"medium"}
                     color={"primary"}
-                    label={"Last Name"}
+                    label={"Price"}
+                    name="price"
                     className={classes.formItem}
-                    name="lastName"
-                    {...register("lastName", {
-                      required: "Last name required",
+                    {...register("price", {
+                      required: " Price required",
                       pattern: {
-                        value: /^[a-zA-Z ]*$/,
-                        message: "Invalid last name",
+                        value: /^[1-9][0-9]*$/,
+                        message: "Invalid Price",
                       },
                     })}
-                    error={Boolean(errors.lastName)}
-                    helperText={errors.lastName?.message}
+                    error={Boolean(errors.price)}
+                    helperText={errors.price?.message}
                     fullWidth
                   ></TextField>
                   <TextField
@@ -737,79 +722,43 @@ function AdminUserManagement() {
                     InputLabelProps={{ shrink: true }}
                     size={"medium"}
                     color={"primary"}
-                    label={"Email"}
-                    name="userEmail"
+                    label={"Allowed Subusers"}
+                    name="subusers"
                     className={classes.formItem}
-                    {...register("userEmail", {
-                      required: "Email required",
+                    {...register("subusers", {
+                      required: " Subusers required",
                       pattern: {
-                        value:
-                          /^[a-zA-Z]+[a-zA-Z0-9_.-]{1,}\@([A-Za-z0-9_\-\.]){1,}\.([A-Za-z]){2,4}$/,
-                        message: "Invalid email",
+                        value: /^[1-5]*$/,
+                        message: "Invalid Subusers",
                       },
                     })}
-                    error={Boolean(errors.userEmail)}
-                    helperText={errors.userEmail?.message}
+                    error={Boolean(errors.subusers)}
+                    helperText={errors.subusers?.message}
                     fullWidth
                   ></TextField>
+
                   <TextField
                     variant={"outlined"}
                     InputLabelProps={{ shrink: true }}
                     size={"medium"}
                     color={"primary"}
-                    label={"Username"}
-                    name="username"
+                    label={"Features"}
+                    multiline
+                    rows={8}
                     className={classes.formItem}
-                    {...register("username", {
-                      required: "Username Required",
+                    name="features"
+                    {...register("features", {
+                      required: "Features Required",
                       pattern: {
-                        value: /^[a-zA-Z]+[a-zA-Z0-9_.-]{2,}$/,
-                        minLength: {
-                          value: 6,
-                          message: "Username can not be less than 3 characters",
-                        },
-                        message: "Invalid Username",
+                        value: /^[a-zA-Z0-9 _.-]{2,}$/m,
+                        message: "Invalid Features",
                       },
                     })}
-                    error={Boolean(errors.username)}
-                    helperText={errors.username?.message}
                     fullWidth
+                    error={Boolean(errors.features)}
+                    helperText={errors.features?.message}
                   ></TextField>
-                  <TextField
-                    variant={"outlined"}
-                    InputLabelProps={{ shrink: true }}
-                    size={"medium"}
-                    color={"primary"}
-                    label={"Password"}
-                    className={classes.formItem}
-                    name="password"
-                    {...register("password", {
-                      required: "Password Required",
-                      minLength: { value: 6, message: "Invalid Password" },
-                    })}
-                    type={"password"}
-                    fullWidth
-                    error={Boolean(errors.password)}
-                    helperText={errors.password?.message}
-                  ></TextField>
-                  <TextField
-                    variant={"outlined"}
-                    InputLabelProps={{ shrink: true }}
-                    size={"medium"}
-                    color={"primary"}
-                    label={"Confirm Password"}
-                    className={classes.formItem}
-                    name="confirmPassword"
-                    {...register("confirmPassword", {
-                      required: "Confirm Password Required",
-                      validate: (value) =>
-                        value === password.current || "Passwords do not match",
-                    })}
-                    type={"password"}
-                    error={Boolean(errors.confirmPassword)}
-                    helperText={errors.confirmPassword?.message}
-                    fullWidth
-                  ></TextField>
+
                   <div
                     style={{
                       display: "flex",
@@ -826,7 +775,7 @@ function AdminUserManagement() {
                       disabled={disable}
                       disableElevation
                     >
-                      Add User
+                      Add Subscription
                       {disable ? <Progress color="primary" size={20} /> : ""}
                     </Button>
                     <Button
@@ -847,4 +796,4 @@ function AdminUserManagement() {
   );
 }
 
-export default AdminUserManagement;
+export default AdminSubscriptionManagement;

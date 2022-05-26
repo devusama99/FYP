@@ -213,7 +213,7 @@ function PaymentSubscriptionTemplate(props) {
             <ListItemText primary={"Subscription Package"} />
           </ListItem>
         </Link>
-        <Link to="/subscription/paymentDetails" className={classes.link}>
+        {/* <Link to="/subscription/paymentDetails" className={classes.link}>
           <ListItem
             onClick={handleDrawerToggle}
             button
@@ -276,7 +276,7 @@ function PaymentSubscriptionTemplate(props) {
             />
             <ListItemText primary={"Invoices"} />
           </ListItem>
-        </Link>
+        </Link> */}
       </List>
     </div>
   );

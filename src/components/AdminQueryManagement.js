@@ -68,7 +68,7 @@ const useStyle = makeStyles((theme) => ({
     marginBottom: theme.spacing(5),
   },
   content: {
-    width: "98.5%",
+    width: "100%",
     boxSizing: "border-box",
     display: "flex",
     marginTop: theme.spacing(7),

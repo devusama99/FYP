@@ -125,7 +125,7 @@ const useStyle = makeStyles((theme) => ({
     alignSelf: "flex-end",
   },
   tableContainer: {
-    width: "98.5%",
+    width: "100%",
   },
   dFlexBetween: {
     display: "flex",

@@ -31,6 +31,7 @@ import {
   MdLogout as SignoutIcon,
   MdOutlineVideoSettings,
 } from "react-icons/md";
+import { AiOutlineDollarCircle } from "react-icons/ai";
 import { Link, useLocation } from "react-router-dom";
 import { logoutAdmin } from "./Helper/ClearLocalStorage";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
@@ -310,6 +311,7 @@ function ProfileTemplate(props) {
             <ListItemText primary={"Query Management"} />
           </ListItem>
         </Link>
+
         <Link to="/admin/changelogManagement" className={classes.link}>
           <ListItem
             onClick={handleDrawerToggle}
@@ -350,6 +352,27 @@ function ProfileTemplate(props) {
               }
             />
             <ListItemText primary={"FAQs Management"} />
+          </ListItem>
+        </Link>
+        <Link to="/admin/subscriptionManagement" className={classes.link}>
+          <ListItem
+            onClick={handleDrawerToggle}
+            button
+            className={
+              location.pathname === "/admin/subscriptionManagement"
+                ? classes.listItemActive
+                : classes.listItem
+            }
+          >
+            <AiOutlineDollarCircle
+              style={{ fontSize: 20 }}
+              className={
+                location.pathname === "/admin/subscriptionManagement"
+                  ? classes.navItemIconActive
+                  : classes.navItemIcon
+              }
+            />
+            <ListItemText primary={"Subscriptions "} />
           </ListItem>
         </Link>
         <Link to="/admin/videosManagement" className={classes.link}>

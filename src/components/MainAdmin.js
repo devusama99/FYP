@@ -9,6 +9,7 @@ import AdminAccount from "./AdminAccount";
 import AdminChangelogManagement from "./AdminChangelogManegement";
 import AdminVideosManagement from "./AdminVideosManagement";
 import AdminQueryManagement from "./AdminQueryManagement";
+import AdminSubscriptionManagement from "./AdminSubscriptionManagement";
 
 function MainAdmin() {
   return (
@@ -48,6 +49,11 @@ function MainAdmin() {
         path={"/admin/videosManagement"}
         exact
         component={AdminVideosManagement}
+      />
+      <Route
+        path={"/admin/subscriptionManagement"}
+        exact
+        component={AdminSubscriptionManagement}
       />
       <Route path={"/admin/account"} exact component={AdminAccount} />
     </AdminTemplate>
